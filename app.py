@@ -3,7 +3,7 @@
 from flask import Flask, redirect, render_template, session
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
-from forms import RegisterForm
+from forms import RegisterForm, LoginForm
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///flask_notes"
@@ -45,4 +45,30 @@ def register_user():
         return redirect('/secret')
 
     else:
-        return render_template('register.html', form=form) # TODO: Need to make template
+        return render_template('register.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_user():
+    """ Show and handle submission of login form for existing user """
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(
+            username = form.username.data, 
+            password = form.password.data
+        )
+
+        if user:
+            session['user_username'] = user.username
+            return redirect('/secret')
+        else:
+            form.username.errors = ['Bad name/password']
+
+    return render_template('login.html', form=form)
+
+@app.get('/secret')
+def show_secret_page():
+    """ Render the top secret, logged-in-only page """
+
+    return ("You made it!")
