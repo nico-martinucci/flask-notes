@@ -10,6 +10,10 @@
 <h2>Notes</h2>
 <ul></ul>
 <a class='btn btn-primary' href=''>Add Note</a>
+<form action="/logout" method="POST">
+    {{ form.hidden_tag() }}
+    <button class="btn btn-outline-warning" type="submit">Logout</button>
+</form>
 
 <button class='btn btn-danger'>Delete User</button>
 

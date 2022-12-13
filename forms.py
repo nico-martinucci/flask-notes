@@ -17,3 +17,8 @@ class LoginForm(FlaskForm):
 
     username = StringField("Username", validators=[InputRequired(), length(max=20)])
     password = PasswordField("Password", validators=[InputRequired(), length(max=100)])
+
+class CSRFProtectForm(FlaskForm):
+    """ CSRF-only form for logging out a user """
+
+    
