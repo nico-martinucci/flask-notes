@@ -8,8 +8,17 @@
 {% block content %}
 
 <h2>Notes</h2>
-<ul></ul>
-<a class='btn btn-primary' href=''>Add Note</a>
+<ul>
+  {% for note in user.notes %}
+  <li>
+    <i class="bi bi-pencil-square"></i>
+    <i class="bi bi-trash-fill"></i>
+    <span>{{ note.title }}</span>
+    <span class='small'>{{ note.short_content }}</span>
+  </li>
+  {% endfor %}
+</ul>
+<a class='btn btn-primary' href='/users/{{ user.username }}/notes/add'>Add Note</a>
 <form action="/logout" method="POST">
     {{ form.hidden_tag() }}
     <button class="btn btn-outline-warning" type="submit">Logout</button>

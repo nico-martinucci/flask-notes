@@ -40,6 +40,8 @@ class User(db.Model):
         nullable = False
     )
 
+    notes = db.relationship('Note', backref='user')
+
     @property
     def full_name(self):
         """ Returns full name in format 'first_name last_name' """
@@ -70,3 +72,34 @@ class User(db.Model):
             return user
 
         return False
+
+
+class Note(db.Model):
+    """Note table model"""
+
+    __tablename__ = 'notes'
+
+    id = db.Column(
+        db.Integer,
+        primary_key = True,
+        autoincrement = True
+    )
+    title = db.Column(
+        db.String(100),
+        nullable = False
+    )
+    content = db.Column(
+        db.Text,
+        nullable = False
+    )
+    owner = db.Column(
+        db.String(20),
+        db.ForeignKey('users.username'),
+        nullable = False
+    )
+
+    @property
+    def short_content(self):
+        """Return a shortened version of the content"""
+
+        return self.content.split(' ')[:5].join(' ') + '...'

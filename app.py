@@ -81,11 +81,11 @@ def login_user():
     return render_template('login.html', form=form)
 
 @app.get('/users/<username>')
-def show_secret_page(username):
-    """ Render the top secret, logged-in-only page """
+def show_user_profile(username):
+    """ Render the user profile page only for that individual user """
 
     if SESSION_USER_KEY not in session or session[SESSION_USER_KEY] != username:
-        flash('You must be logged in to view!')
+        flash('You must be logged in as the right user to view!')
         return redirect('/')
 
     return render_template(
