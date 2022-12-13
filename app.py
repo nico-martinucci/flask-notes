@@ -15,7 +15,7 @@ connect_db(app)
 db.create_all()
 
 toolbar = DebugToolbarExtension(app)
-
+# add more flash messages
 @app.get('/')
 def homepage():
     """Redirect to /register route"""
@@ -40,7 +40,7 @@ def register_user():
         db.session.add(new_user)
         db.session.commit()
 
-        session['user_username'] = new_user.username
+        session['user_username'] = new_user.username # global constant for session user key
 
         return redirect(f'/users/{new_user.username}')
 
@@ -74,7 +74,7 @@ def show_secret_page(username):
     if 'user_username' not in session or session['user_username'] != username:
         flash('You must be logged in to view!')
         return redirect('/')
-        
+
     return render_template(
         'profile.html', 
         user=User.query.get_or_404(username), 

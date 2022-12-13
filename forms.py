@@ -8,7 +8,7 @@ class RegisterForm(FlaskForm):
 
     username = StringField("Username", validators=[InputRequired(), length(max=20)])
     password = PasswordField("Password", validators=[InputRequired(), length(max=100)])
-    email = StringField('Email', validators=[Email(), length(max=50)])
+    email = StringField('Email', validators=[Email(), length(max=50)]) # don't use the validator, use the EmailField
     first_name = StringField('First Name', validators=[InputRequired(), length(max=30)])
     last_name = StringField('Last Name', validators=[InputRequired(), length(max=30)])
 
@@ -21,4 +21,3 @@ class LoginForm(FlaskForm):
 class CSRFProtectForm(FlaskForm):
     """ CSRF-only form for logging out a user """
 
-    
