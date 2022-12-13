@@ -15,6 +15,9 @@ connect_db(app)
 db.create_all()
 
 toolbar = DebugToolbarExtension(app)
+
+SESSION_USER_KEY = 'user_username'
+
 # add more flash messages
 @app.get('/')
 def homepage():
@@ -29,23 +32,33 @@ def register_user():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User.register(
-            username = form.username.data,
-            password = form.password.data,
-            email = form.email.data,
-            first_name = form.first_name.data,
-            last_name = form.last_name.data
-        )
+        username = form.username.data
+        email = form.email.data
+        is_unique_username = User.query.get(username) is None
+        is_unique_email = User.query.filter(User.email == email).one_or_none() is None
 
-        db.session.add(new_user)
-        db.session.commit()
+        if all([is_unique_username, is_unique_email]):
+            new_user = User.register(
+                username = username,
+                password = form.password.data,
+                email = email,
+                first_name = form.first_name.data,
+                last_name = form.last_name.data
+            )
 
-        session['user_username'] = new_user.username # global constant for session user key
+            db.session.add(new_user)
+            db.session.commit()
 
-        return redirect(f'/users/{new_user.username}')
+            session[SESSION_USER_KEY] = new_user.username
 
-    else:
-        return render_template('register.html', form=form)
+            return redirect(f'/users/{new_user.username}')
+
+        if not is_unique_username:
+            form.username.errors = ['Username already taken']
+        if not is_unique_email:
+            form.email.errors = ['Email already taken']
+
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
@@ -60,7 +73,7 @@ def login_user():
         )
 
         if user:
-            session['user_username'] = user.username
+            session[SESSION_USER_KEY] = user.username
             return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Bad name/password']
@@ -71,13 +84,13 @@ def login_user():
 def show_secret_page(username):
     """ Render the top secret, logged-in-only page """
 
-    if 'user_username' not in session or session['user_username'] != username:
+    if SESSION_USER_KEY not in session or session[SESSION_USER_KEY] != username:
         flash('You must be logged in to view!')
         return redirect('/')
 
     return render_template(
-        'profile.html', 
-        user=User.query.get_or_404(username), 
+        'profile.html',
+        user=User.query.get_or_404(username),
         form=CSRFProtectForm())
 
 @app.post('/logout')
@@ -87,7 +100,7 @@ def logout_current_user():
     form = CSRFProtectForm()
 
     if form.validate_on_submit():
-        session.pop('user_username', None)
+        session.pop(SESSION_USER_KEY, None)
         flash('Successfully logged out!')
-    
+
     return redirect('/')
