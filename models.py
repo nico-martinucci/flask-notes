@@ -40,6 +40,12 @@ class User(db.Model):
         nullable = False
     )
 
+    @property
+    def full_name(self):
+        """ Returns full name in format 'first_name last_name' """
+
+        return f'{self.first_name} {self.last_name}'
+
     @classmethod
     def register(cls, username, password, email, first_name, last_name):
         """Register a user with hashed password and return user"""
@@ -62,5 +68,5 @@ class User(db.Model):
 
         if user and bcrypt.check_password_hash(user.password, password):
             return user
-        
+
         return False

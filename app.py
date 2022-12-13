@@ -1,6 +1,6 @@
 """Flask Notes app"""
 
-from flask import Flask, redirect, render_template, session
+from flask import Flask, redirect, render_template, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
 from forms import RegisterForm, LoginForm
@@ -42,7 +42,7 @@ def register_user():
 
         session['user_username'] = new_user.username
 
-        return redirect('/secret')
+        return redirect(f'/users/{new_user.username}')
 
     else:
         return render_template('register.html', form=form)
@@ -55,20 +55,26 @@ def login_user():
 
     if form.validate_on_submit():
         user = User.authenticate(
-            username = form.username.data, 
+            username = form.username.data,
             password = form.password.data
         )
 
         if user:
             session['user_username'] = user.username
-            return redirect('/secret')
+            return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Bad name/password']
 
     return render_template('login.html', form=form)
 
-@app.get('/secret')
-def show_secret_page():
+@app.get('/users/<username>')
+def show_secret_page(username):
     """ Render the top secret, logged-in-only page """
 
-    return ("You made it!")
+    if 'user_username' not in session or session['user_username'] != username:
+        flash('You must be logged in to view!')
+        return redirect('/')
+
+    user = User.query.get_or_404(username)
+
+    return render_template('profile.html', user=user)
