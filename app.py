@@ -18,7 +18,6 @@ toolbar = DebugToolbarExtension(app)
 
 SESSION_USER_KEY = 'user_username'
 
-# add more flash messages
 @app.get('/')
 def homepage():
     """Redirect to /register route"""
@@ -181,6 +180,24 @@ def update_note(note_id):
         return redirect(f'/users/{username}')
     else:
         return render_template('update_note.html', form=form)
+
+@app.post('/notes/<note_id>/delete')
+def delete_note(note_id):
+    """ Delete the note matching the provided note_id """
+
+    form = CSRFProtectForm()
+    note = Note.query.get_or_404(note_id)
+    username = note.user.username
+
+    if form.validate_on_submit():
+
+        db.session.delete(note)
+        db.session.commit()
+
+        flash('Note successfully deleted!')
+
+    return redirect(f'/users/{username}')
+
 
 
 def check_logged_user(username):
