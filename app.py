@@ -2,7 +2,7 @@
 
 from flask import Flask, redirect, render_template, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User
+from models import connect_db, db, User, Note
 from forms import RegisterForm, LoginForm, CSRFProtectForm, NoteForm
 
 app = Flask(__name__)
@@ -51,6 +51,7 @@ def register_user():
 
             session[SESSION_USER_KEY] = new_user.username
 
+            flash('User successfully created!')
             return redirect(f'/users/{new_user.username}')
 
         if not is_unique_username:
@@ -74,6 +75,7 @@ def login_user():
 
         if user:
             session[SESSION_USER_KEY] = user.username
+            flash('Login successful!')
             return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Bad name/password']
@@ -118,7 +120,7 @@ def delete_user(username):
 
         for note in notes:
             db.session.delete(note)
-        
+
         db.session.commit()
 
         db.session.delete(user)
@@ -126,13 +128,13 @@ def delete_user(username):
 
         session.pop(SESSION_USER_KEY, None)
         flash('User successfully deleted!')
-    
+
     return redirect('/')
 
 @app.route('/users/<username>/notes/add', methods=['GET', 'POST'])
 def add_new_note(username):
     """ Show form for and handle adding new notes for the current user """
-    
+
     if not check_logged_user(username):
         flash('You must be logged in as the right user to view!')
         return redirect('/')
@@ -140,18 +142,50 @@ def add_new_note(username):
     form = NoteForm()
 
     if form.validate_on_submit():
+        new_note = Note(
+            title = form.title.data,
+            content = form.content.data,
+            owner = username
+        )
+
+        db.session.add(new_note)
+        db.session.commit()
+
+        flash('Successfully added note!')
+        return redirect(f'/users/{username}')
 
     else:
         return render_template('add_note.html', form=form)
 
+@app.route('/notes/<note_id>/update', methods=['GET', 'POST'])
+def update_note(note_id):
+    """ Show form for and handle updating notes """
 
+    note = Note.query.get_or_404(note_id)
+    username = note.user.username
 
+    if not check_logged_user(username):
+        flash('You must be logged in as the right user to view!')
+        return redirect('/')
 
+    form = NoteForm(obj = note)
 
+    if form.validate_on_submit():
+        note.title = form.title.data
+        note.content = form.content.data
 
+        db.session.add(note)
+        db.session.commit()
+
+        flash('Successfully updated note!')
+        return redirect(f'/users/{username}')
+    else:
+        return render_template('update_note.html', form=form)
 
 
 def check_logged_user(username):
-    """ Returns True if the passed username matches the username in the session """
+    """ Returns True if the passed username
+    matches the username in the session """
 
-    return SESSION_USER_KEY in session and session[SESSION_USER_KEY] == username
+    return (SESSION_USER_KEY in session and
+        session[SESSION_USER_KEY] == username)

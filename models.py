@@ -101,5 +101,6 @@ class Note(db.Model):
     @property
     def short_content(self):
         """Return a shortened version of the content"""
-
-        return self.content.split(' ')[:5].join(' ') + '...'
+        content_split = self.content.split(' ')
+        short_content_len = min(len(content_split), 5)
+        return ' '.join(content_split[:short_content_len]) + '...'

@@ -11,8 +11,14 @@
 <ul>
   {% for note in user.notes %}
   <li>
-    <i class="bi bi-pencil-square"></i>
-    <i class="bi bi-trash-fill"></i>
+    <a class='btn btn-primary btn-sm' href='/notes/{{ note.id }}/update'>
+      <i class="bi bi-pencil-square"></i>
+    </a>
+    <form action='/notes/{{ note.id }}/delete' method='POST'>
+      <button class='btn btn-danger btn-sm' href=''>
+        <i class="bi bi-trash-fill"></i>
+      </button>
+    </form>
     <span>{{ note.title }}</span>
     <span class='small'>{{ note.short_content }}</span>
   </li>
