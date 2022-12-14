@@ -19,11 +19,11 @@
   {% endfor %}
 </ul>
 <a class='btn btn-primary' href='/users/{{ user.username }}/notes/add'>Add Note</a>
-<form action="/logout" method="POST">
+<form method="POST">
     {{ form.hidden_tag() }}
-    <button class="btn btn-outline-warning" type="submit">Logout</button>
+    <button formaction="/logout" class="btn btn-outline-warning" type="submit">Logout</button>
+    <button formaction="/users/{{user.username}}/delete" class='btn btn-danger'>Delete User</button>
 </form>
 
-<button class='btn btn-danger'>Delete User</button>
 
 {% endblock %}

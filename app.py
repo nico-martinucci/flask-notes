@@ -3,7 +3,7 @@
 from flask import Flask, redirect, render_template, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
-from forms import RegisterForm, LoginForm, CSRFProtectForm
+from forms import RegisterForm, LoginForm, CSRFProtectForm, NoteForm
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///flask_notes"
@@ -84,14 +84,15 @@ def login_user():
 def show_user_profile(username):
     """ Render the user profile page only for that individual user """
 
-    if SESSION_USER_KEY not in session or session[SESSION_USER_KEY] != username:
+    if not check_logged_user(username):
         flash('You must be logged in as the right user to view!')
         return redirect('/')
 
     return render_template(
         'profile.html',
         user=User.query.get_or_404(username),
-        form=CSRFProtectForm())
+        form=CSRFProtectForm()
+    )
 
 @app.post('/logout')
 def logout_current_user():
@@ -104,3 +105,53 @@ def logout_current_user():
         flash('Successfully logged out!')
 
     return redirect('/')
+
+@app.post('/users/<username>/delete')
+def delete_user(username):
+    """ Delete current user and all of their notes! """
+
+    form = CSRFProtectForm()
+
+    if form.validate_on_submit():
+        user = User.query.get_or_404(username)
+        notes = user.notes
+
+        for note in notes:
+            db.session.delete(note)
+        
+        db.session.commit()
+
+        db.session.delete(user)
+        db.session.commit()
+
+        session.pop(SESSION_USER_KEY, None)
+        flash('User successfully deleted!')
+    
+    return redirect('/')
+
+@app.route('/users/<username>/notes/add', methods=['GET', 'POST'])
+def add_new_note(username):
+    """ Show form for and handle adding new notes for the current user """
+    
+    if not check_logged_user(username):
+        flash('You must be logged in as the right user to view!')
+        return redirect('/')
+
+    form = NoteForm()
+
+    if form.validate_on_submit():
+
+    else:
+        return render_template('add_note.html', form=form)
+
+
+
+
+
+
+
+
+def check_logged_user(username):
+    """ Returns True if the passed username matches the username in the session """
+
+    return SESSION_USER_KEY in session and session[SESSION_USER_KEY] == username
