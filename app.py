@@ -117,10 +117,12 @@ def delete_user(username):
         user = User.query.get_or_404(username)
         notes = user.notes
 
+        # can use notes.remove() instead of looping
         for note in notes:
             db.session.delete(note)
 
-        db.session.commit()
+        # db.session.commit()
+
 
         db.session.delete(user)
         db.session.commit()

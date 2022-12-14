@@ -14,18 +14,21 @@
     <a class='btn btn-primary btn-sm' href='/notes/{{ note.id }}/update'>
       <i class="bi bi-pencil-square"></i>
     </a>
+
     <form style="display: inline;" action='/notes/{{ note.id }}/delete' method='POST'>
         {{ form.hidden_tag() }}
         <button class='btn btn-danger btn-sm' href=''>
         <i class="bi bi-trash-fill"></i>
       </button>
     </form>
+    
     <span>{{ note.title }}</span>
     <span class='small'>{{ note.short_content }}</span>
   </li>
   {% endfor %}
 </ul>
 <a class='btn btn-primary' href='/users/{{ user.username }}/notes/add'>Add Note</a>
+
 <form method="POST">
     {{ form.hidden_tag() }}
     <button formaction="/logout" class="btn btn-outline-warning" type="submit">Logout</button>
